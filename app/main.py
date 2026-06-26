@@ -37,6 +37,11 @@ async def token_auth(request: Request, call_next):
     secure = settings.secure_cookies
 
     if has_session:
+        if request.query_params.get("t"):
+            response = RedirectResponse(url=request.url.path or "/", status_code=302)
+            if not has_device:
+                response.set_cookie(DEVICE_COOKIE, str(uuid.uuid4()), secure=secure, **_COOKIE_OPTS)
+            return response
         response = await call_next(request)
         if not has_device:
             response.set_cookie(DEVICE_COOKIE, str(uuid.uuid4()), secure=secure, **_COOKIE_OPTS)

@@ -36,6 +36,14 @@ async def test_root_valid_cookie_returns_200(client: AsyncClient):
     assert resp.status_code == 200
 
 
+async def test_token_in_url_with_valid_cookie_redirects_to_clean_url(client: AsyncClient):
+    """Re-visiting the share link when already authenticated must strip the token."""
+    client.cookies.set("gallery_session", settings.access_token)
+    resp = await client.get(f"/?t={settings.access_token}", follow_redirects=False)
+    assert resp.status_code == 302
+    assert "t=" not in resp.headers["location"]
+
+
 async def test_root_invalid_token_returns_403(client: AsyncClient):
     resp = await client.get("/?t=wrong-token")
     assert resp.status_code == 403
