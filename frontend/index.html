@@ -94,6 +94,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);
   text-align:center;margin-bottom:44px;
 }
 .home-btns{width:100%;display:flex;flex-direction:column;gap:14px}
+.home-row{display:flex;gap:12px;width:100%}
+.home-row .btn{flex:1;flex-direction:column;gap:6px;padding:16px 10px;font-size:13px;line-height:1.3;min-height:88px}
 
 /* ── UPLOAD ──────────────────────────────────────────── */
 .photo-box{
@@ -257,34 +259,45 @@ html,body{height:100%;background:var(--bg);color:var(--text);
     <p class="home-sub">Pamiątka na wyciągnięcie ręki&nbsp;✨</p>
 
     <div class="home-btns">
-      <button class="btn btn-primary" onclick="goTo('upload')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <polyline points="6 9 6 2 18 2 18 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="1.8"/>
-          <rect x="6" y="14" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/>
-        </svg>
-        Wydrukuj pocztówkę!
-      </button>
+      <div class="home-row">
+        <button class="btn btn-primary" onclick="startUpload('print')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <polyline points="6 9 6 2 18 2 18 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="6" y="14" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+          Wydrukuj pocztówkę
+        </button>
+        <button class="btn btn-ghost" onclick="startUpload('gallery')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Wrzuć do galerii
+        </button>
+      </div>
 
-      <button class="btn btn-ghost" onclick="goTo('my-photos')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
-                stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        Moje pocztówki
-      </button>
-
-      <button class="btn btn-ghost" id="btn-gallery" onclick="window.open('https://lumen.hexu.pl/gallery/V53UW9BFxI0R50LNcgFGxdq1', '_blank')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
-          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
-          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
-          <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
-        </svg>
-        Wspólna galeria
-      </button>
+      <div class="home-row">
+        <button class="btn btn-ghost" onclick="goTo('my-photos')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+                  stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Moje pocztówki
+        </button>
+        <button class="btn btn-ghost" id="btn-gallery" onclick="window.open('https://lumen.hexu.pl/gallery/V53UW9BFxI0R50LNcgFGxdq1', '_blank')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+          Wspólna galeria
+        </button>
+      </div>
     </div>
 
   </div>
@@ -301,7 +314,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);
       </svg>
       Wróć
     </button>
-    <span class="topbar-title">Pocztówka</span>
+    <span class="topbar-title" id="upload-title">Pocztówka</span>
   </div>
 
   <!-- rate limit info (hidden until loaded) -->
@@ -339,7 +352,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);
         <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2"
               stroke-linejoin="round"/>
       </svg>
-      Wydrukuj!
+      <span id="upload-send-label">Wydrukuj!</span>
     </button>
   </div>
 
@@ -364,7 +377,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);
     <p class="q-status" id="q-status">Oczekuje na wydruk…</p>
 
     <div class="q-actions">
-      <button class="btn btn-outline" onclick="goTo('upload')">
+      <button class="btn btn-outline" onclick="startUpload('print')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
           <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -374,15 +387,24 @@ html,body{height:100%;background:var(--bg);color:var(--text);
 
       <div class="divider"><span>W międzyczasie…</span></div>
 
-      <button class="btn btn-ghost" onclick="goTo('my-photos')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
-                stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-          <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        Moje pocztówki
-      </button>
+      <div style="display:flex;gap:12px">
+        <button class="btn btn-ghost" onclick="goTo('my-photos')" style="flex:1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+                  stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Moje pocztówki
+        </button>
+        <button class="btn btn-ghost" onclick="goHome()" style="flex:1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <polyline points="9 22 9 12 15 12 15 22" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          Wróć do menu
+        </button>
+      </div>
     </div>
 
   </div>
@@ -449,6 +471,30 @@ html,body{height:100%;background:var(--bg);color:var(--text);
   </div>
 
 </div>
+<!-- ═══════════════ GALLERY DONE ═══════════════ -->
+<div class="screen" id="screen-gallery-done">
+  <div class="queue-wrap">
+    <div class="q-icon" style="background:#EEF6F1">✓</div>
+    <h2 class="q-h2">Dodano do galerii!</h2>
+    <p class="q-sub">Zdjęcie pojawi się wkrótce w galerii ✨</p>
+
+    <div class="q-actions">
+      <button class="btn btn-outline" onclick="startUpload('gallery')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Wrzuć kolejne zdjęcie
+      </button>
+      <div class="divider"><span>lub</span></div>
+      <button class="btn btn-ghost" onclick="goHome()">
+        Wróć do menu
+      </button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /#app -->
 
 <script>
@@ -458,8 +504,21 @@ let pollTimer = null;
 let myPhotosTimer = null;
 let file = null;
 let atLimit = false;
+let uploadMode = 'print'; // 'print' | 'gallery'
 
 // ── navigation ────────────────────────────────────────
+function startUpload(mode) {
+  uploadMode = mode;
+  goTo('upload');
+}
+
+function goHome() {
+  stopPoll();
+  stopMyPhotos();
+  navHistory = ['home'];
+  _show('home');
+}
+
 function goTo(id) {
   stopPoll();
   stopMyPhotos();
@@ -481,7 +540,14 @@ function _show(id) {
 
   if (id === 'upload') {
     resetUpload();
-    loadRateLimit();
+    if (uploadMode === 'gallery') {
+      document.getElementById('upload-title').textContent = 'Dodaj do galerii';
+      document.getElementById('upload-send-label').textContent = 'Wrzuć do galerii!';
+    } else {
+      document.getElementById('upload-title').textContent = 'Pocztówka';
+      document.getElementById('upload-send-label').textContent = 'Wydrukuj!';
+      loadRateLimit();
+    }
   }
   if (id === 'my-photos') {
     fetchMyPhotos();
@@ -515,7 +581,7 @@ document.getElementById('file-input').addEventListener('change', function () {
     </svg>
     Zmień zdjęcie`;
 
-  document.getElementById('btn-send').disabled = atLimit;
+  document.getElementById('btn-send').disabled = uploadMode === 'print' && atLimit;
   document.getElementById('err-msg').style.display = 'none';
 });
 
@@ -565,7 +631,8 @@ function updateRateBar(used, allowed) {
 }
 
 async function doUpload() {
-  if (!file || atLimit) return;
+  if (!file) return;
+  if (uploadMode === 'print' && atLimit) return;
 
   document.getElementById('btn-pick').disabled = true;
   document.getElementById('btn-send').disabled = true;
@@ -575,6 +642,23 @@ async function doUpload() {
   try {
     const fd = new FormData();
     fd.append('file', file);
+
+    if (uploadMode === 'gallery') {
+      const res = await fetch('/upload-gallery', { method: 'POST', body: fd });
+      if (res.ok) {
+        goTo('gallery-done');
+        return;
+      }
+      const errors = {
+        413: 'Zdjęcie jest za duże (maks. 20 MB).',
+        422: 'Nieobsługiwany format pliku. Użyj JPG, PNG lub HEIC.',
+        503: 'Galeria jest chwilowo niedostępna.',
+      };
+      showErr(errors[res.status] || 'Coś poszło nie tak. Spróbuj ponownie.');
+      return;
+    }
+
+    // print mode
     const res = await fetch('/upload', { method: 'POST', body: fd });
 
     if (res.ok) {
@@ -606,7 +690,7 @@ async function doUpload() {
   } finally {
     document.getElementById('loading').style.display = 'none';
     document.getElementById('btn-pick').disabled = false;
-    if (!atLimit) document.getElementById('btn-send').disabled = !file;
+    document.getElementById('btn-send').disabled = !file || (uploadMode === 'print' && atLimit);
   }
 }
 

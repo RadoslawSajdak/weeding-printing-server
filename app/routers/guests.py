@@ -21,6 +21,46 @@ DeviceId = Annotated[str, Depends(get_device_id)]
 MAX_BYTES = settings.max_file_size_mb * 1024 * 1024
 
 
+async def _lychee_upload_and_cleanup(file_path: str) -> None:
+    await lychee.upload_photo(file_path)
+    try:
+        os.unlink(file_path)
+    except OSError:
+        pass
+
+
+@router.post("/upload-gallery", status_code=status.HTTP_200_OK)
+async def upload_to_gallery(file: UploadFile, background_tasks: BackgroundTasks) -> dict:
+    if not (settings.lychee_url and settings.lychee_username and settings.lychee_password):
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Galeria nie jest skonfigurowana")
+
+    ext = Path(file.filename or "").suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Unsupported file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}",
+        )
+
+    unique_filename = f"{uuid.uuid4()}{ext}"
+    dest_path = os.path.join(settings.upload_dir, unique_filename)
+
+    bytes_written = 0
+    async with aiofiles.open(dest_path, "wb") as out:
+        while chunk := await file.read(256 * 1024):
+            bytes_written += len(chunk)
+            if bytes_written > MAX_BYTES:
+                await file.close()
+                os.unlink(dest_path)
+                raise HTTPException(
+                    status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+                    detail=f"File exceeds {settings.max_file_size_mb}MB limit",
+                )
+            await out.write(chunk)
+
+    background_tasks.add_task(_lychee_upload_and_cleanup, dest_path)
+    return {"status": "ok"}
+
+
 @router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
 async def upload_photo(file: UploadFile, db: DbDep, device_id: DeviceId, background_tasks: BackgroundTasks) -> UploadResponse:
     ext = Path(file.filename or "").suffix.lower()
