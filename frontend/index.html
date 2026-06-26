@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Wesele</title>
+<style>
+/* ── reset ───────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+/* ── tokens ──────────────────────────────────────────── */
+:root{
+  --gold:#C4976C;
+  --gold-lt:#DEB895;
+  --gold-dk:#A07850;
+  --brown:#5C3D2E;
+  --bg:#FAF7F2;
+  --surface:#fff;
+  --text:#2C1810;
+  --muted:#8A7060;
+  --border:#E8DDD0;
+  --r:18px;
+  --r-sm:12px;
+}
+
+/* ── shell ───────────────────────────────────────────── */
+html,body{height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  overflow:hidden}
+#app{position:relative;width:100%;height:100%}
+
+/* ── screens ─────────────────────────────────────────── */
+.screen{
+  position:absolute;inset:0;
+  display:none;flex-direction:column;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding-bottom:max(env(safe-area-inset-bottom,0px),24px);
+}
+.screen.active{display:flex}
+
+/* ── top bar ─────────────────────────────────────────── */
+.topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:16px 20px 10px;
+}
+.back{
+  background:none;border:none;
+  display:flex;align-items:center;gap:6px;
+  font-size:15px;font-weight:500;color:var(--gold-dk);
+  padding:8px 0;
+}
+.topbar-title{font-size:16px;font-weight:600;color:var(--brown)}
+
+/* ── buttons ─────────────────────────────────────────── */
+.btn{
+  width:100%;padding:18px 20px;border-radius:var(--r);
+  font-size:17px;font-weight:600;border:none;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:opacity .15s,transform .1s;
+}
+.btn:active{opacity:.82;transform:scale(.98)}
+.btn:disabled{opacity:.38;pointer-events:none}
+.btn-primary{
+  background:linear-gradient(135deg,var(--gold) 0%,var(--gold-dk) 100%);
+  color:#fff;
+  box-shadow:0 4px 18px rgba(196,151,108,.38);
+}
+.btn-ghost{
+  background:var(--surface);color:var(--brown);
+  border:2px solid var(--border);
+}
+.btn-outline{
+  background:transparent;color:var(--gold-dk);
+  border:2px solid var(--gold-lt);
+}
+
+/* ── HOME ────────────────────────────────────────────── */
+.home-wrap{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 28px;gap:0;
+}
+.rings{margin-bottom:28px}
+.home-h1{
+  font-family:Georgia,'Palatino Linotype',serif;
+  font-size:38px;font-weight:normal;color:var(--brown);
+  text-align:center;line-height:1.15;margin-bottom:6px;
+}
+.home-sub{
+  font-size:15px;color:var(--muted);
+  text-align:center;margin-bottom:44px;
+}
+.home-btns{width:100%;display:flex;flex-direction:column;gap:14px}
+
+/* ── UPLOAD ──────────────────────────────────────────── */
+.photo-box{
+  flex:1;margin:8px 20px 0;
+  border-radius:var(--r);background:var(--surface);
+  border:2px dashed var(--border);
+  display:flex;align-items:center;justify-content:center;
+  min-height:220px;overflow:hidden;cursor:pointer;
+  transition:border-color .2s;
+  position:relative;
+}
+.photo-box:active{border-color:var(--gold)}
+.ph{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  color:var(--muted);font-size:15px;text-align:center;padding:20px;
+}
+#preview{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:none;
+}
+.rate-bar{
+  margin:8px 20px 0;padding:10px 14px;
+  border-radius:var(--r-sm);
+  background:#F0F4EE;border:1px solid #C8DCC0;
+  font-size:14px;color:#4A7040;text-align:center;
+  display:none;
+}
+.rate-bar.rate-bar-full{
+  background:#FEF0F0;border-color:#F5C6C6;color:#C04040;
+}
+.upload-btns{padding:14px 20px 4px;display:flex;flex-direction:column;gap:12px}
+.err-msg{
+  background:#FEF0F0;border:1px solid #F5C6C6;
+  border-radius:var(--r-sm);padding:12px 16px;
+  font-size:14px;color:#C04040;
+  display:none;text-align:center;
+}
+.loading{
+  display:none;align-items:center;justify-content:center;
+  gap:10px;padding:10px;color:var(--muted);font-size:15px;
+}
+.spin{
+  width:20px;height:20px;
+  border:2.5px solid var(--border);border-top-color:var(--gold);
+  border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── QUEUE ───────────────────────────────────────────── */
+.queue-wrap{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:32px 28px 20px;
+}
+.q-icon{
+  width:76px;height:76px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;background:#F5F0EA;margin-bottom:16px;
+  transition:background .3s;
+}
+.q-h2{
+  font-family:Georgia,serif;font-size:24px;color:var(--brown);
+  margin-bottom:6px;text-align:center;
+}
+.q-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:28px}
+.q-bubble{
+  width:128px;height:128px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-lt),var(--gold));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:0 6px 26px rgba(196,151,108,.35);
+  margin-bottom:14px;transition:opacity .3s;
+}
+.q-num{font-size:52px;font-weight:700;color:#fff;line-height:1}
+.q-lbl{font-size:11px;color:rgba(255,255,255,.8);letter-spacing:.06em;text-transform:uppercase}
+.q-status{
+  font-size:16px;font-weight:500;color:var(--brown);
+  margin-bottom:28px;text-align:center;min-height:24px;
+}
+.q-actions{width:100%;display:flex;flex-direction:column;gap:12px;margin-top:auto}
+.divider{
+  display:flex;align-items:center;gap:12px;margin:2px 0;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{font-size:13px;color:var(--muted);white-space:nowrap}
+
+/* ── MY PHOTOS ───────────────────────────────────────── */
+.mp-header{
+  padding:12px 20px 14px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.mp-rate-used{
+  font-size:15px;font-weight:600;color:var(--brown);
+}
+.mp-rate-hint{
+  font-size:13px;color:var(--muted);margin-top:3px;
+}
+.mp-rate-hint.at-limit{color:#C04040}
+.mp-list{
+  flex:1;overflow-y:auto;
+  padding:14px 20px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.mp-empty{
+  text-align:center;color:var(--muted);font-size:15px;
+  margin-top:48px;
+}
+.job-item{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface);
+  border-radius:var(--r-sm);
+  padding:14px 16px;
+  border:1px solid var(--border);
+}
+.ji-icon{
+  font-size:22px;width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;background:#F5F0EA;flex-shrink:0;
+}
+.ji-success .ji-icon{background:#EEF6F1}
+.ji-failed  .ji-icon{background:#FEF0F0}
+.ji-processing .ji-icon{background:#FFF8EE}
+.ji-body{flex:1;min-width:0}
+.ji-name{
+  font-size:15px;font-weight:500;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ji-detail{font-size:13px;color:var(--muted);margin-top:2px}
+.ji-success  .ji-detail{color:#3A8A50}
+.ji-failed   .ji-detail{color:#C04040}
+.ji-processing .ji-detail{color:var(--gold-dk)}
+.mp-actions{
+  padding:12px 20px;
+  border-top:1px solid var(--border);
+}
+
+/* ── GALLERY placeholder ─────────────────────────────── */
+.gallery-wrap{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 32px;gap:14px;text-align:center;
+}
+.gallery-wrap svg{opacity:.45;margin-bottom:8px}
+.gallery-h2{font-family:Georgia,serif;font-size:24px;color:var(--brown)}
+.gallery-soon{font-size:15px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ═══════════════ HOME ═══════════════ -->
+<div class="screen active" id="screen-home">
+  <div class="home-wrap">
+
+    <svg class="rings" width="86" height="46" viewBox="0 0 86 46" fill="none">
+      <circle cx="28" cy="23" r="20" stroke="var(--gold)" stroke-width="3"/>
+      <circle cx="58" cy="23" r="20" stroke="var(--gold)" stroke-width="3"/>
+      <path d="M21 13 Q28 9 35 13" stroke="var(--gold-lt)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    </svg>
+
+    <h1 class="home-h1">Wesele</h1>
+    <p class="home-sub">Pamiątka na wyciągnięcie ręki&nbsp;✨</p>
+
+    <div class="home-btns">
+      <button class="btn btn-primary" onclick="goTo('upload')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <polyline points="6 9 6 2 18 2 18 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="6" y="14" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Wydrukuj pocztówkę!
+      </button>
+
+      <button class="btn btn-ghost" onclick="goTo('my-photos')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+                stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Moje pocztówki
+      </button>
+
+      <button class="btn btn-ghost" onclick="goTo('gallery')" style="opacity:.55">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Wspólna galeria
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ UPLOAD ═══════════════ -->
+<div class="screen" id="screen-upload">
+
+  <div class="topbar">
+    <button class="back" onclick="goBack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Wróć
+    </button>
+    <span class="topbar-title">Pocztówka</span>
+  </div>
+
+  <!-- rate limit info (hidden until loaded) -->
+  <div class="rate-bar" id="rate-bar"></div>
+
+  <!-- photo preview -->
+  <div class="photo-box" id="photo-box" onclick="pickPhoto()">
+    <div class="ph" id="ph">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+              stroke="var(--muted)" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="4" stroke="var(--muted)" stroke-width="1.5"/>
+      </svg>
+      <p>Dotknij, aby wybrać zdjęcie</p>
+    </div>
+    <img id="preview" alt="Podgląd zdjęcia"/>
+  </div>
+
+  <div class="upload-btns">
+    <div class="err-msg" id="err-msg"></div>
+    <div class="loading" id="loading">
+      <div class="spin"></div><span>Przesyłam zdjęcie…</span>
+    </div>
+    <button class="btn btn-ghost" id="btn-pick" onclick="pickPhoto()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+              stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.8"/>
+      </svg>
+      Wybierz zdjęcie z galerii
+    </button>
+    <button class="btn btn-primary" id="btn-send" onclick="doUpload()" disabled>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2"
+              stroke-linejoin="round"/>
+      </svg>
+      Wydrukuj!
+    </button>
+  </div>
+
+  <input type="file" id="file-input"
+         accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,image/webp"
+         hidden>
+</div>
+
+<!-- ═══════════════ QUEUE ═══════════════ -->
+<div class="screen" id="screen-queue">
+  <div class="queue-wrap">
+
+    <div class="q-icon" id="q-icon">📋</div>
+    <h2 class="q-h2"  id="q-h2">Zdjęcie w kolejce!</h2>
+    <p  class="q-sub" id="q-sub">Twoja pocztówka zostanie wydrukowana</p>
+
+    <div class="q-bubble" id="q-bubble">
+      <div class="q-num" id="q-num">–</div>
+      <div class="q-lbl">pozycja</div>
+    </div>
+
+    <p class="q-status" id="q-status">Oczekuje na wydruk…</p>
+
+    <div class="q-actions">
+      <button class="btn btn-outline" onclick="goTo('upload')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        Wydrukuj kolejne zdjęcie
+      </button>
+
+      <div class="divider"><span>W międzyczasie…</span></div>
+
+      <button class="btn btn-ghost" onclick="goTo('my-photos')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+                stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Moje pocztówki
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ MY PHOTOS ═══════════════ -->
+<div class="screen" id="screen-my-photos">
+
+  <div class="topbar">
+    <button class="back" onclick="goBack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Wróć
+    </button>
+    <span class="topbar-title">Moje pocztówki</span>
+  </div>
+
+  <div class="mp-header">
+    <div class="mp-rate-used" id="mp-rate-used">Ładowanie…</div>
+    <div class="mp-rate-hint" id="mp-rate-hint"></div>
+  </div>
+
+  <div class="mp-list" id="mp-list">
+    <p class="mp-empty">Ładowanie…</p>
+  </div>
+
+  <div class="mp-actions">
+    <button class="btn btn-primary" onclick="goTo('upload')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <polyline points="6 9 6 2 18 2 18 9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="1.8"/>
+        <rect x="6" y="14" width="12" height="8" rx="1" stroke="currentColor" stroke-width="1.8"/>
+      </svg>
+      Wydrukuj kolejną!
+    </button>
+  </div>
+
+</div>
+
+<!-- ═══════════════ GALLERY ═══════════════ -->
+<div class="screen" id="screen-gallery">
+
+  <div class="topbar">
+    <button class="back" onclick="goBack()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Wróć
+    </button>
+    <span class="topbar-title">Wspólna galeria</span>
+  </div>
+
+  <div class="gallery-wrap">
+    <svg width="72" height="72" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--muted)" stroke-width="1.5"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="var(--muted)"/>
+      <path d="M21 15l-5-5L5 21" stroke="var(--muted)" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>
+    <h2 class="gallery-h2">Wspólna galeria</h2>
+    <p class="gallery-soon">Wkrótce tu pojawią się Wasze zdjęcia z wesela ✨</p>
+  </div>
+
+</div>
+</div><!-- /#app -->
+
+<script>
+// ── state ─────────────────────────────────────────────
+let navHistory = ['home'];
+let pollTimer = null;
+let myPhotosTimer = null;
+let file = null;
+let atLimit = false;
+
+// ── navigation ────────────────────────────────────────
+function goTo(id) {
+  stopPoll();
+  stopMyPhotos();
+  navHistory.push(id);
+  _show(id);
+}
+
+function goBack() {
+  if (navHistory.length <= 1) return;
+  stopPoll();
+  stopMyPhotos();
+  navHistory.pop();
+  _show(navHistory[navHistory.length - 1]);
+}
+
+function _show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+
+  if (id === 'upload') {
+    resetUpload();
+    loadRateLimit();
+  }
+  if (id === 'my-photos') {
+    fetchMyPhotos();
+    myPhotosTimer = setInterval(fetchMyPhotos, 5000);
+  }
+}
+
+// ── upload ────────────────────────────────────────────
+function pickPhoto() {
+  const inp = document.getElementById('file-input');
+  inp.value = '';
+  inp.click();
+}
+
+document.getElementById('file-input').addEventListener('change', function () {
+  const f = this.files[0];
+  if (!f) return;
+  file = f;
+
+  const prev = document.getElementById('preview');
+  if (prev.src) URL.revokeObjectURL(prev.src);
+  prev.src = URL.createObjectURL(f);
+  prev.style.display = 'block';
+  document.getElementById('ph').style.display = 'none';
+
+  document.getElementById('btn-pick').innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+            stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.8"/>
+    </svg>
+    Zmień zdjęcie`;
+
+  document.getElementById('btn-send').disabled = atLimit;
+  document.getElementById('err-msg').style.display = 'none';
+});
+
+function resetUpload() {
+  file = null;
+  atLimit = false;
+  const prev = document.getElementById('preview');
+  if (prev.src) URL.revokeObjectURL(prev.src);
+  prev.src = '';
+  prev.style.display = 'none';
+  document.getElementById('ph').style.display = 'flex';
+  document.getElementById('btn-pick').innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"
+            stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="1.8"/>
+    </svg>
+    Wybierz zdjęcie z galerii`;
+  document.getElementById('btn-send').disabled = true;
+  document.getElementById('btn-pick').disabled = false;
+  document.getElementById('err-msg').style.display = 'none';
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('rate-bar').style.display = 'none';
+}
+
+async function loadRateLimit() {
+  try {
+    const res = await fetch('/my-queue');
+    if (!res.ok) return;
+    const data = await res.json();
+    updateRateBar(data.prints_this_hour, data.prints_allowed);
+  } catch { /* ignore */ }
+}
+
+function updateRateBar(used, allowed) {
+  atLimit = used >= allowed;
+  const bar = document.getElementById('rate-bar');
+  bar.style.display = 'block';
+  bar.className = 'rate-bar' + (atLimit ? ' rate-bar-full' : '');
+  if (atLimit) {
+    bar.innerHTML = `<strong>Limit wyczerpany</strong> — ${used} z ${allowed} pocztówek na tę godzinę`;
+    document.getElementById('btn-send').disabled = true;
+  } else {
+    bar.textContent = `Pocztówki: ${used} z ${allowed} w tej godzinie`;
+    document.getElementById('btn-send').disabled = !file;
+  }
+}
+
+async function doUpload() {
+  if (!file || atLimit) return;
+
+  document.getElementById('btn-pick').disabled = true;
+  document.getElementById('btn-send').disabled = true;
+  document.getElementById('err-msg').style.display = 'none';
+  document.getElementById('loading').style.display = 'flex';
+
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/upload', { method: 'POST', body: fd });
+
+    if (res.ok) {
+      const data = await res.json();
+      goTo('queue');
+      initQueue(data);
+      return;
+    }
+
+    if (res.status === 429) {
+      const body = await res.json();
+      const detail = body.detail;
+      if (detail && detail.prints_allowed) {
+        showErr(`Wyczerpałeś limit ${detail.prints_allowed} pocztówek na godzinę. Spróbuj za jakiś czas.`);
+        updateRateBar(detail.prints_this_hour, detail.prints_allowed);
+      } else {
+        showErr('Limit pocztówek na tę godzinę wyczerpany.');
+      }
+      return;
+    }
+
+    const errors = {
+      413: 'Zdjęcie jest za duże (maks. 20 MB).',
+      422: 'Nieobsługiwany format pliku. Użyj JPG, PNG lub HEIC.',
+    };
+    showErr(errors[res.status] || 'Coś poszło nie tak. Spróbuj ponownie.');
+  } catch {
+    showErr('Brak połączenia. Sprawdź internet i spróbuj ponownie.');
+  } finally {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('btn-pick').disabled = false;
+    if (!atLimit) document.getElementById('btn-send').disabled = !file;
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('err-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ── queue / status polling ────────────────────────────
+function initQueue(data) {
+  renderQueue(data);
+  if (data.status === 'PENDING' || data.status === 'PROCESSING') {
+    startPoll(data.job_id);
+  }
+}
+
+function startPoll(jobId) {
+  async function tick() {
+    try {
+      const res = await fetch('/status/' + jobId);
+      if (!res.ok) return;
+      const d = await res.json();
+      renderQueue(d);
+      if (d.status === 'SUCCESS' || d.status === 'FAILED') stopPoll();
+    } catch { /* ignore */ }
+  }
+  pollTimer = setInterval(tick, 3000);
+}
+
+function stopPoll() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function renderQueue(d) {
+  const icon   = document.getElementById('q-icon');
+  const h2     = document.getElementById('q-h2');
+  const sub    = document.getElementById('q-sub');
+  const bubble = document.getElementById('q-bubble');
+  const num    = document.getElementById('q-num');
+  const status = document.getElementById('q-status');
+
+  bubble.style.display = 'flex';
+
+  switch (d.status) {
+    case 'SUCCESS':
+      icon.textContent = '✓';
+      icon.style.background = '#EEF6F1';
+      h2.textContent  = 'Wydrukowano!';
+      sub.textContent = 'Twoja pocztówka jest gotowa 🎉';
+      bubble.style.display = 'none';
+      status.textContent = '';
+      break;
+
+    case 'FAILED':
+      icon.textContent = '✕';
+      icon.style.background = '#FEF0F0';
+      h2.textContent  = 'Nie udało się';
+      sub.textContent = 'Spróbuj ponownie lub poproś obsługę o pomoc';
+      bubble.style.display = 'none';
+      status.textContent = '';
+      break;
+
+    case 'PROCESSING':
+      icon.textContent = '🖨';
+      icon.style.background = '#FFF8EE';
+      h2.textContent  = 'Drukuję…';
+      sub.textContent = 'Twoja pocztówka jest teraz drukowana';
+      bubble.style.display = 'none';
+      status.textContent = 'Chwila jeszcze…';
+      break;
+
+    default: { // PENDING
+      const pos = d.queue_position;
+      icon.textContent = '📋';
+      icon.style.background = '#F5F0EA';
+      h2.textContent  = 'Zdjęcie w kolejce!';
+      sub.textContent = 'Twoja pocztówka zostanie wydrukowana';
+      num.textContent = pos ?? '–';
+
+      if (pos === 1)    status.textContent = 'Następne w kolejce!';
+      else if (pos > 1) status.textContent = `Przed Tobą: ${pos - 1} ${plPhotos(pos - 1)}`;
+      else              status.textContent = 'Oczekuje na wydruk…';
+    }
+  }
+}
+
+// ── my photos ─────────────────────────────────────────
+function stopMyPhotos() {
+  if (myPhotosTimer) { clearInterval(myPhotosTimer); myPhotosTimer = null; }
+}
+
+async function fetchMyPhotos() {
+  try {
+    const res = await fetch('/my-queue');
+    if (!res.ok) return;
+    renderMyPhotos(await res.json());
+  } catch { /* ignore */ }
+}
+
+function renderMyPhotos(data) {
+  const used = data.prints_this_hour;
+  const allowed = data.prints_allowed;
+  const remaining = allowed - used;
+
+  document.getElementById('mp-rate-used').textContent =
+    `Pocztówki: ${used} z ${allowed} w tej godzinie`;
+
+  const hint = document.getElementById('mp-rate-hint');
+  if (remaining <= 0) {
+    hint.textContent = 'Limit wyczerpany — odczekaj godzinę';
+    hint.className = 'mp-rate-hint at-limit';
+  } else {
+    hint.textContent = `Możesz wydrukować jeszcze ${remaining} ${plPhotos(remaining)}`;
+    hint.className = 'mp-rate-hint';
+  }
+
+  const list = document.getElementById('mp-list');
+  if (data.jobs.length === 0) {
+    list.innerHTML = '<p class="mp-empty">Nie wysłałeś/aś jeszcze żadnych pocztówek.<br>Naciśnij poniżej, aby zacząć!</p>';
+    return;
+  }
+  list.innerHTML = data.jobs.map(jobItemHTML).join('');
+}
+
+function jobItemHTML(job) {
+  const icons = { PENDING:'⏳', PROCESSING:'🖨', SUCCESS:'✓', FAILED:'✕' };
+  const cls   = { PENDING:'', PROCESSING:'ji-processing', SUCCESS:'ji-success', FAILED:'ji-failed' };
+
+  let detail = '';
+  switch (job.status) {
+    case 'PENDING':
+      detail = job.queue_position === 1 ? 'Następna w kolejce!' : `Pozycja w kolejce: ${job.queue_position}`;
+      break;
+    case 'PROCESSING': detail = 'Drukowanie…'; break;
+    case 'SUCCESS':    detail = 'Wydrukowana'; break;
+    case 'FAILED':     detail = 'Błąd druku'; break;
+  }
+
+  const name = job.original_name.length > 30
+    ? job.original_name.slice(0, 27) + '…'
+    : job.original_name;
+
+  return `<div class="job-item ${cls[job.status]}">
+    <div class="ji-icon">${icons[job.status]}</div>
+    <div class="ji-body">
+      <div class="ji-name">${name}</div>
+      <div class="ji-detail">${detail}</div>
+    </div>
+  </div>`;
+}
+
+// ── helpers ───────────────────────────────────────────
+function plPhotos(n) {
+  if (n === 1) return 'zdjęcie';
+  if (n < 5)  return 'zdjęcia';
+  return 'zdjęć';
+}
+</script>
+</body>
+</html>
