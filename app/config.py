@@ -2,6 +2,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Application settings loaded from environment variables or a .env file.
+
+    All fields can be overridden via environment variables (case-insensitive).
+    Lychee integration is disabled when lychee_url, lychee_username, or
+    lychee_password are left empty.
+    """
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     access_token: str = "wesele2026"

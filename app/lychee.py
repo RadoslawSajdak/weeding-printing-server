@@ -23,6 +23,7 @@ _CHUNK_SIZE  = 4 * 1024 * 1024  # 4 MB
 
 
 def _is_configured() -> bool:
+    """Return True if all Lychee connection settings are set."""
     return bool(settings.lychee_url and settings.lychee_username and settings.lychee_password)
 
 
@@ -33,11 +34,30 @@ def _csrf_token(client: httpx.AsyncClient) -> str:
 
 
 def _csrf_headers(client: httpx.AsyncClient) -> dict[str, str]:
+    """Build the X-XSRF-TOKEN header dict required by Laravel's CSRF middleware.
+
+    Args:
+        client: The HTTP client whose cookie jar contains the XSRF-TOKEN.
+
+    Returns:
+        A dict with the CSRF header, or an empty dict if no token is present.
+    """
     token = _csrf_token(client)
     return {_CSRF_HEADER: token} if token else {}
 
 
 async def _build_client() -> httpx.AsyncClient:
+    """Create and authenticate a new shared httpx client against the Lychee API.
+
+    Fetches the home page to obtain the XSRF-TOKEN cookie, then logs in.
+
+    Returns:
+        An authenticated AsyncClient ready for photo upload requests.
+
+    Raises:
+        httpx.HTTPStatusError: If the login request returns an error status.
+        httpx.RequestError: If the Lychee server is unreachable.
+    """
     client = httpx.AsyncClient(
         base_url=settings.lychee_url,
         timeout=30.0,
@@ -64,6 +84,11 @@ async def _build_client() -> httpx.AsyncClient:
 
 
 async def _get_client() -> httpx.AsyncClient:
+    """Return the singleton authenticated Lychee client, creating it if needed.
+
+    Returns:
+        The shared AsyncClient.
+    """
     global _client
     if _client is not None:
         return _client
@@ -74,6 +99,7 @@ async def _get_client() -> httpx.AsyncClient:
 
 
 async def _invalidate_client() -> None:
+    """Close and discard the singleton client so the next call re-authenticates."""
     global _client
     async with _client_lock:
         if _client is not None:

@@ -1,3 +1,9 @@
+"""FastAPI application for the wedding print server.
+
+Token-based authentication is enforced via middleware on all routes except
+/printer (printer API), /health, and interactive API docs.
+"""
+
 import os
 import uuid
 from contextlib import asynccontextmanager
@@ -19,6 +25,7 @@ _COOKIE_OPTS = dict(httponly=True, samesite="lax", max_age=86400)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Ensure upload/DB directories exist, initialise the database, and close the Lychee client on shutdown."""
     os.makedirs(settings.upload_dir, exist_ok=True)
     os.makedirs(os.path.dirname(settings.database_url.split("///")[-1]), exist_ok=True)
     await init_db()
@@ -31,6 +38,23 @@ app = FastAPI(title="Weselny Serwer Druku", lifespan=lifespan)
 
 @app.middleware("http")
 async def token_auth(request: Request, call_next):
+    """Enforce token authentication for all guest-facing routes.
+
+    Guests authenticate by visiting any URL with ``?t=<access_token>``. The token
+    is stored in a session cookie so subsequent requests don't need the query
+    parameter. A separate per-device cookie is set on first access to identify
+    the device across requests.
+
+    Args:
+        request: The incoming HTTP request.
+        call_next: The next handler in the middleware chain.
+
+    Returns:
+        A 302 redirect stripping ``?t=`` from the URL if the session cookie is
+        already valid, a 302 redirect that sets the session cookie when
+        authenticating via ``?t=``, or a 403 response when no valid token is
+        present.
+    """
     if any(request.url.path.startswith(p) for p in UNPROTECTED_PREFIXES):
         return await call_next(request)
 
@@ -62,11 +86,13 @@ async def token_auth(request: Request, call_next):
 
 @app.get("/health")
 async def health() -> dict:
+    """Return service liveness status."""
     return {"status": "ok"}
 
 
 @app.get("/")
 async def root():
+    """Serve the frontend single-page application."""
     return FileResponse(FRONTEND / "index.html")
 
 

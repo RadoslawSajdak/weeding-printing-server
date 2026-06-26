@@ -28,7 +28,10 @@ from typing import Optional
 _parser = argparse.ArgumentParser(description="Printer simulator")
 _parser.add_argument("--api", default=os.environ.get("API_BASE", "http://localhost:8000"))
 _parser.add_argument("--key", default=os.environ.get("PRINTER_API_KEY", "printer-secret-key"))
+_parser.add_argument("--auto", action="store_true", help="Auto-poll and approve jobs after 1 second")
 _args = _parser.parse_args()
+
+AUTO_MODE = _args.auto
 
 API_BASE = _args.api.rstrip("/")
 API_KEY  = _args.key
@@ -302,11 +305,17 @@ def _poll_worker(interval: int):
             _current_job = Job(job_id, data["filename"], data["original_name"], local)
 
         _open_viewer(local)
-        sys.stdout.write(
-            f"       {DIM}type {RST}{GRN}done{RST}{DIM} or {RST}{RED}fail [reason]{RST}\n"
-            f">>> "
-        )
-        sys.stdout.flush()
+
+        if AUTO_MODE:
+            sys.stdout.write(f"       {GRN}[auto] approving in 1s…{RST}\n")
+            sys.stdout.flush()
+            threading.Timer(1.0, cmd_done).start()
+        else:
+            sys.stdout.write(
+                f"       {DIM}type {RST}{GRN}done{RST}{DIM} or {RST}{RED}fail [reason]{RST}\n"
+                f">>> "
+            )
+            sys.stdout.flush()
 
 
 def cmd_poll(arg: str):
@@ -372,6 +381,10 @@ def main():
     print(f"  viewer {VIEWER or YLW+'not found (install feh)'+RST}")
     print(f"  tmpdir {DIM}{TMPDIR}{RST}")
     print(f"\nType {BOLD}help{RST} for commands, {BOLD}poll{RST} to start auto-mode.\n")
+
+    if AUTO_MODE:
+        print(f"{GRN}Auto mode enabled — polling every 5s and auto-approving jobs.{RST}\n")
+        cmd_poll("5")
 
     try:
         while True:

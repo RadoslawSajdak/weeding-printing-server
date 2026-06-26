@@ -1,3 +1,5 @@
+"""Async SQLAlchemy engine and session factory for SQLite (aiosqlite)."""
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy import text
@@ -13,6 +15,10 @@ class Base(DeclarativeBase):
 
 
 async def init_db() -> None:
+    """Initialise the database: apply WAL mode, create tables, and run inline migrations.
+
+    Called automatically on app startup via the FastAPI lifespan handler.
+    """
     async with engine.begin() as conn:
         await conn.execute(text("PRAGMA journal_mode=WAL"))
         await conn.execute(text("PRAGMA synchronous=NORMAL"))
@@ -25,5 +31,6 @@ async def init_db() -> None:
 
 
 async def get_db():
+    """FastAPI dependency that yields an async database session per request."""
     async with AsyncSessionLocal() as session:
         yield session
