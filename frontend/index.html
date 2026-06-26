@@ -13,44 +13,77 @@ button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 /* ── tokens ──────────────────────────────────────────── */
 :root{
-  --gold:#C4976C;
-  --gold-lt:#DEB895;
-  --gold-dk:#A07850;
-  --brown:#5C3D2E;
-  --bg:#FAF7F2;
-  --surface:#fff;
-  --text:#2C1810;
-  --muted:#8A7060;
-  --border:#E8DDD0;
-  --r:18px;
-  --r-sm:12px;
+  --gold:#C4976C;--gold-lt:#DEB895;--gold-dk:#A07850;
+  --brown:#5C3D2E;--bg:#FAF7F2;--surface:#fff;
+  --text:#2C1810;--muted:#8A7060;--border:#E8DDD0;
+  --r:18px;--r-sm:12px;
 }
+
+/* ── keyframes ───────────────────────────────────────── */
+@keyframes spin     {to{transform:rotate(360deg)}}
+@keyframes fadeUp   {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fadeIn   {from{opacity:0}to{opacity:1}}
+@keyframes slideIn  {from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes pulse    {
+  0%,100%{transform:scale(1);box-shadow:0 6px 26px rgba(196,151,108,.35)}
+  50%    {transform:scale(1.045);box-shadow:0 10px 34px rgba(196,151,108,.54)}
+}
+
+/* ── lightbox ────────────────────────────────────────── */
+#thumb-modal{
+  position:fixed;inset:0;z-index:200;
+  background:rgba(0,0,0,.78);
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 28px;
+  opacity:0;visibility:hidden;
+  transition:opacity .2s ease,visibility 0s linear .2s;
+}
+#thumb-modal.open{
+  opacity:1;visibility:visible;
+  transition:opacity .2s ease,visibility 0s;
+}
+#thumb-modal img{
+  max-width:100%;max-height:100%;
+  border-radius:var(--r);
+  box-shadow:0 12px 48px rgba(0,0,0,.5);
+  object-fit:contain;
+  transform:scale(.88);
+  transition:transform .22s ease;
+}
+#thumb-modal.open img{transform:scale(1)}
+#thumb-modal-close{
+  position:absolute;top:max(env(safe-area-inset-top,0px),16px);right:20px;
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.15);border:none;
+  color:#fff;font-size:20px;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+#thumb-modal-close:active{background:rgba(255,255,255,.28)}
 
 /* ── shell ───────────────────────────────────────────── */
 html,body{height:100%;background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-  overflow:hidden}
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;overflow:hidden}
 #app{position:relative;width:100%;height:100%}
 
 /* ── screens ─────────────────────────────────────────── */
 .screen{
-  position:absolute;inset:0;
-  display:none;flex-direction:column;
+  position:absolute;inset:0;display:flex;flex-direction:column;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
   padding-bottom:max(env(safe-area-inset-bottom,0px),24px);
+  opacity:0;visibility:hidden;transform:translateY(10px);pointer-events:none;
+  transition:opacity .22s ease,transform .22s ease,visibility 0s linear .22s;
 }
-.screen.active{display:flex}
+.screen.active{
+  opacity:1;visibility:visible;transform:none;pointer-events:auto;
+  transition:opacity .22s ease,transform .22s ease,visibility 0s;
+}
 
 /* ── top bar ─────────────────────────────────────────── */
-.topbar{
-  display:flex;align-items:center;gap:10px;
-  padding:16px 20px 10px;
-}
+.topbar{display:flex;align-items:center;gap:10px;padding:16px 20px 10px}
 .back{
-  background:none;border:none;
-  display:flex;align-items:center;gap:6px;
-  font-size:15px;font-weight:500;color:var(--gold-dk);
-  padding:8px 0;
+  background:none;border:none;display:flex;align-items:center;gap:6px;
+  font-size:15px;font-weight:500;color:var(--gold-dk);padding:8px 0;
 }
 .topbar-title{font-size:16px;font-weight:600;color:var(--brown)}
 
@@ -59,106 +92,89 @@ html,body{height:100%;background:var(--bg);color:var(--text);
   width:100%;padding:18px 20px;border-radius:var(--r);
   font-size:17px;font-weight:600;border:none;
   display:flex;align-items:center;justify-content:center;gap:10px;
-  transition:opacity .15s,transform .1s;
+  transition:opacity .15s,transform .12s,box-shadow .15s;
 }
-.btn:active{opacity:.82;transform:scale(.98)}
+.btn:active{opacity:.8;transform:scale(.97)}
 .btn:disabled{opacity:.38;pointer-events:none}
 .btn-primary{
   background:linear-gradient(135deg,var(--gold) 0%,var(--gold-dk) 100%);
-  color:#fff;
-  box-shadow:0 4px 18px rgba(196,151,108,.38);
+  color:#fff;box-shadow:0 4px 18px rgba(196,151,108,.38);
 }
-.btn-ghost{
-  background:var(--surface);color:var(--brown);
-  border:2px solid var(--border);
-}
-.btn-outline{
-  background:transparent;color:var(--gold-dk);
-  border:2px solid var(--gold-lt);
-}
+.btn-ghost{background:var(--surface);color:var(--brown);border:2px solid var(--border)}
+.btn-outline{background:transparent;color:var(--gold-dk);border:2px solid var(--gold-lt)}
 
 /* ── HOME ────────────────────────────────────────────── */
 .home-wrap{
   flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:40px 28px;gap:0;
+  align-items:center;justify-content:center;padding:40px 28px;
 }
+.screen.active .rings       {animation:fadeIn .5s ease both}
+.screen.active .home-h1     {animation:fadeUp .45s ease both .08s}
+.screen.active .home-sub    {animation:fadeUp .45s ease both .14s}
+.screen.active .home-thumbs {animation:fadeIn .45s ease both .2s}
+.screen.active .home-btns   {animation:fadeUp .45s ease both .22s}
+
 .rings{margin-bottom:28px}
 .home-h1{
   font-family:Georgia,'Palatino Linotype',serif;
   font-size:38px;font-weight:normal;color:var(--brown);
   text-align:center;line-height:1.15;margin-bottom:6px;
 }
-.home-sub{
-  font-size:15px;color:var(--muted);
-  text-align:center;margin-bottom:44px;
+.home-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:16px}
+
+.home-thumbs{
+  display:none;gap:8px;justify-content:center;align-items:center;margin-bottom:24px;
 }
+.home-thumb{
+  width:42px;height:42px;border-radius:50%;object-fit:cover;
+  border:2.5px solid var(--gold-lt);box-shadow:0 2px 8px rgba(160,120,80,.18);
+  transition:transform .15s;flex-shrink:0;
+}
+.home-thumb:active{transform:scale(.9)}
+
 .home-btns{width:100%;display:flex;flex-direction:column;gap:14px}
 .home-row{display:flex;gap:12px;width:100%}
 .home-row .btn{flex:1;flex-direction:column;gap:6px;padding:16px 10px;font-size:13px;line-height:1.3;min-height:88px}
 
 /* ── UPLOAD ──────────────────────────────────────────── */
 .photo-box{
-  flex:1;margin:8px 20px 0;
-  border-radius:var(--r);background:var(--surface);
+  flex:1;margin:8px 20px 0;border-radius:var(--r);background:var(--surface);
   border:2px dashed var(--border);
   display:flex;align-items:center;justify-content:center;
   min-height:220px;overflow:hidden;cursor:pointer;
-  transition:border-color .2s;
-  position:relative;
+  transition:border-color .2s,background .2s;position:relative;
 }
-.photo-box:active{border-color:var(--gold)}
-.ph{
-  display:flex;flex-direction:column;align-items:center;gap:12px;
-  color:var(--muted);font-size:15px;text-align:center;padding:20px;
-}
-#preview{
-  position:absolute;inset:0;width:100%;height:100%;
-  object-fit:cover;display:none;
-}
+.photo-box:hover,.photo-box:active{border-color:var(--gold);background:#fdfaf7}
+.ph{display:flex;flex-direction:column;align-items:center;gap:12px;
+  color:var(--muted);font-size:15px;text-align:center;padding:20px}
+#preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
 .rate-bar{
-  margin:8px 20px 0;padding:10px 14px;
-  border-radius:var(--r-sm);
+  margin:8px 20px 0;padding:10px 14px;border-radius:var(--r-sm);
   background:#F0F4EE;border:1px solid #C8DCC0;
-  font-size:14px;color:#4A7040;text-align:center;
-  display:none;
+  font-size:14px;color:#4A7040;text-align:center;display:none;
 }
-.rate-bar.rate-bar-full{
-  background:#FEF0F0;border-color:#F5C6C6;color:#C04040;
-}
+.rate-bar.rate-bar-full{background:#FEF0F0;border-color:#F5C6C6;color:#C04040}
 .upload-btns{padding:14px 20px 4px;display:flex;flex-direction:column;gap:12px}
 .err-msg{
-  background:#FEF0F0;border:1px solid #F5C6C6;
-  border-radius:var(--r-sm);padding:12px 16px;
-  font-size:14px;color:#C04040;
-  display:none;text-align:center;
+  background:#FEF0F0;border:1px solid #F5C6C6;border-radius:var(--r-sm);
+  padding:12px 16px;font-size:14px;color:#C04040;display:none;text-align:center;
 }
-.loading{
-  display:none;align-items:center;justify-content:center;
-  gap:10px;padding:10px;color:var(--muted);font-size:15px;
-}
+.loading{display:none;align-items:center;justify-content:center;gap:10px;padding:10px;color:var(--muted);font-size:15px}
 .spin{
-  width:20px;height:20px;
-  border:2.5px solid var(--border);border-top-color:var(--gold);
+  width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--gold);
   border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0;
 }
-@keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── QUEUE ───────────────────────────────────────────── */
-.queue-wrap{
-  flex:1;display:flex;flex-direction:column;align-items:center;
-  padding:32px 28px 20px;
-}
+.queue-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:32px 28px 20px}
+.screen.active .queue-wrap{animation:fadeUp .38s ease both}
+
 .q-icon{
   width:76px;height:76px;border-radius:50%;
   display:flex;align-items:center;justify-content:center;
-  font-size:34px;background:#F5F0EA;margin-bottom:16px;
-  transition:background .3s;
+  font-size:34px;background:#F5F0EA;margin-bottom:16px;transition:background .3s;
 }
-.q-h2{
-  font-family:Georgia,serif;font-size:24px;color:var(--brown);
-  margin-bottom:6px;text-align:center;
-}
+.q-h2{font-family:Georgia,serif;font-size:24px;color:var(--brown);margin-bottom:6px;text-align:center}
 .q-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:28px}
 .q-bubble{
   width:128px;height:128px;border-radius:50%;
@@ -167,75 +183,52 @@ html,body{height:100%;background:var(--bg);color:var(--text);
   box-shadow:0 6px 26px rgba(196,151,108,.35);
   margin-bottom:14px;transition:opacity .3s;
 }
+.q-bubble.pulsing{animation:pulse 2.4s ease-in-out infinite}
 .q-num{font-size:52px;font-weight:700;color:#fff;line-height:1}
 .q-lbl{font-size:11px;color:rgba(255,255,255,.8);letter-spacing:.06em;text-transform:uppercase}
-.q-status{
-  font-size:16px;font-weight:500;color:var(--brown);
-  margin-bottom:28px;text-align:center;min-height:24px;
-}
+.q-status{font-size:16px;font-weight:500;color:var(--brown);margin-bottom:28px;text-align:center;min-height:24px}
 .q-actions{width:100%;display:flex;flex-direction:column;gap:12px;margin-top:auto}
-.divider{
-  display:flex;align-items:center;gap:12px;margin:2px 0;
-}
+.divider{display:flex;align-items:center;gap:12px;margin:2px 0}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 .divider span{font-size:13px;color:var(--muted);white-space:nowrap}
 
 /* ── MY PHOTOS ───────────────────────────────────────── */
 .mp-header{
-  padding:12px 20px 14px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
+  padding:12px 20px 14px;background:var(--surface);border-bottom:1px solid var(--border);
 }
-.mp-rate-used{
-  font-size:15px;font-weight:600;color:var(--brown);
-}
-.mp-rate-hint{
-  font-size:13px;color:var(--muted);margin-top:3px;
-}
+.mp-rate-used{font-size:15px;font-weight:600;color:var(--brown)}
+.mp-rate-hint{font-size:13px;color:var(--muted);margin-top:3px}
 .mp-rate-hint.at-limit{color:#C04040}
-.mp-list{
-  flex:1;overflow-y:auto;
-  padding:14px 20px;
-  display:flex;flex-direction:column;gap:10px;
-}
-.mp-empty{
-  text-align:center;color:var(--muted);font-size:15px;
-  margin-top:48px;
-}
+.mp-list{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:10px}
+.mp-empty{text-align:center;color:var(--muted);font-size:15px;margin-top:48px;animation:fadeUp .4s ease both}
 .job-item{
   display:flex;align-items:center;gap:14px;
-  background:var(--surface);
-  border-radius:var(--r-sm);
-  padding:14px 16px;
-  border:1px solid var(--border);
+  background:var(--surface);border-radius:var(--r-sm);
+  padding:14px 16px;border:1px solid var(--border);
+  animation:slideIn .25s ease both;
+  animation-delay:var(--anim-delay,0ms);
 }
 .ji-icon{
-  font-size:22px;width:40px;height:40px;
+  font-size:22px;width:48px;height:48px;
   display:flex;align-items:center;justify-content:center;
-  border-radius:50%;background:#F5F0EA;flex-shrink:0;
+  border-radius:50%;background:#F5F0EA;flex-shrink:0;overflow:hidden;
 }
-.ji-success .ji-icon{background:#EEF6F1}
-.ji-failed  .ji-icon{background:#FEF0F0}
+.ji-icon img{width:100%;height:100%;object-fit:cover}
+.ji-success   .ji-icon{background:#EEF6F1}
+.ji-failed    .ji-icon{background:#FEF0F0}
 .ji-processing .ji-icon{background:#FFF8EE}
 .ji-body{flex:1;min-width:0}
-.ji-name{
-  font-size:15px;font-weight:500;color:var(--text);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.ji-name{font-size:15px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ji-detail{font-size:13px;color:var(--muted);margin-top:2px}
-.ji-success  .ji-detail{color:#3A8A50}
-.ji-failed   .ji-detail{color:#C04040}
+.ji-success   .ji-detail{color:#3A8A50}
+.ji-failed    .ji-detail{color:#C04040}
 .ji-processing .ji-detail{color:var(--gold-dk)}
-.mp-actions{
-  padding:12px 20px;
-  border-top:1px solid var(--border);
-}
+.mp-actions{padding:12px 20px;border-top:1px solid var(--border)}
 
 /* ── GALLERY placeholder ─────────────────────────────── */
 .gallery-wrap{
   flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:40px 32px;gap:14px;text-align:center;
+  align-items:center;justify-content:center;padding:40px 32px;gap:14px;text-align:center;
 }
 .gallery-wrap svg{opacity:.45;margin-bottom:8px}
 .gallery-h2{font-family:Georgia,serif;font-size:24px;color:var(--brown)}
@@ -257,6 +250,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);
 
     <h1 class="home-h1">Wesele</h1>
     <p class="home-sub">Pamiątka na wyciągnięcie ręki&nbsp;✨</p>
+
+    <div class="home-thumbs" id="home-thumbs"></div>
 
     <div class="home-btns">
       <div class="home-row">
@@ -317,10 +312,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);
     <span class="topbar-title" id="upload-title">Pocztówka</span>
   </div>
 
-  <!-- rate limit info (hidden until loaded) -->
   <div class="rate-bar" id="rate-bar"></div>
 
-  <!-- photo preview -->
   <div class="photo-box" id="photo-box" onclick="pickPhoto()">
     <div class="ph" id="ph">
       <svg width="56" height="56" viewBox="0 0 24 24" fill="none">
@@ -471,6 +464,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);
   </div>
 
 </div>
+
 <!-- ═══════════════ GALLERY DONE ═══════════════ -->
 <div class="screen" id="screen-gallery-done">
   <div class="queue-wrap">
@@ -488,11 +482,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);
         Wrzuć kolejne zdjęcie
       </button>
       <div class="divider"><span>lub</span></div>
-      <button class="btn btn-ghost" onclick="goHome()">
-        Wróć do menu
-      </button>
+      <button class="btn btn-ghost" onclick="goHome()">Wróć do menu</button>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<div id="thumb-modal" onclick="closeThumb()">
+  <button id="thumb-modal-close" onclick="closeThumb()">✕</button>
+  <img id="thumb-modal-img" alt="">
 </div>
 
 </div><!-- /#app -->
@@ -504,7 +502,54 @@ let pollTimer = null;
 let myPhotosTimer = null;
 let file = null;
 let atLimit = false;
-let uploadMode = 'print'; // 'print' | 'gallery'
+let uploadMode = 'print';
+let pendingThumb = null;
+let myPhotosLastData = null;
+
+// ── thumbnail cache ────────────────────────────────────
+async function createThumb(f) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(f);
+    img.onload = () => {
+      const maxW = Math.round(window.innerWidth  * 0.8);
+      const maxH = Math.round(window.innerHeight * 0.8);
+      const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight, 1);
+      const w = Math.round(img.naturalWidth  * scale);
+      const h = Math.round(img.naturalHeight * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
+
+function openThumb(src) {
+  const modal = document.getElementById('thumb-modal');
+  document.getElementById('thumb-modal-img').src = src;
+  modal.classList.add('open');
+}
+
+function closeThumb() {
+  document.getElementById('thumb-modal').classList.remove('open');
+}
+
+function saveThumb(jobId, dataUrl) {
+  if (!dataUrl) return;
+  try {
+    localStorage.setItem('thumb_' + jobId, dataUrl);
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('thumb_'));
+    if (keys.length > 20) keys.slice(0, keys.length - 20).forEach(k => localStorage.removeItem(k));
+  } catch { /* quota */ }
+}
+
+function getThumb(jobId) {
+  try { return localStorage.getItem('thumb_' + jobId); } catch { return null; }
+}
 
 // ── navigation ────────────────────────────────────────
 function startUpload(mode) {
@@ -538,6 +583,9 @@ function _show(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
 
+  if (id === 'home') {
+    renderHomeThumbs();
+  }
   if (id === 'upload') {
     resetUpload();
     if (uploadMode === 'gallery') {
@@ -555,6 +603,20 @@ function _show(id) {
   }
 }
 
+// ── home thumb strip ───────────────────────────────────
+function renderHomeThumbs() {
+  const strip = document.getElementById('home-thumbs');
+  try {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('thumb_'));
+    if (!keys.length) { strip.style.display = 'none'; return; }
+    strip.style.display = 'flex';
+    strip.innerHTML = keys.slice(-5).map(k => {
+      const src = localStorage.getItem(k);
+      return src ? `<img class="home-thumb" src="${src}" alt="">` : '';
+    }).filter(Boolean).join('');
+  } catch { strip.style.display = 'none'; }
+}
+
 // ── upload ────────────────────────────────────────────
 function pickPhoto() {
   const inp = document.getElementById('file-input');
@@ -566,6 +628,8 @@ document.getElementById('file-input').addEventListener('change', function () {
   const f = this.files[0];
   if (!f) return;
   file = f;
+
+  createThumb(f).then(t => { pendingThumb = t; });
 
   const prev = document.getElementById('preview');
   if (prev.src) URL.revokeObjectURL(prev.src);
@@ -587,6 +651,7 @@ document.getElementById('file-input').addEventListener('change', function () {
 
 function resetUpload() {
   file = null;
+  pendingThumb = null;
   atLimit = false;
   const prev = document.getElementById('preview');
   if (prev.src) URL.revokeObjectURL(prev.src);
@@ -646,6 +711,7 @@ async function doUpload() {
     if (uploadMode === 'gallery') {
       const res = await fetch('/upload-gallery', { method: 'POST', body: fd });
       if (res.ok) {
+        pendingThumb = null;
         goTo('gallery-done');
         return;
       }
@@ -658,11 +724,12 @@ async function doUpload() {
       return;
     }
 
-    // print mode
     const res = await fetch('/upload', { method: 'POST', body: fd });
 
     if (res.ok) {
       const data = await res.json();
+      if (pendingThumb) saveThumb(data.job_id, pendingThumb);
+      pendingThumb = null;
       goTo('queue');
       initQueue(data);
       return;
@@ -733,8 +800,6 @@ function renderQueue(d) {
   const num    = document.getElementById('q-num');
   const status = document.getElementById('q-status');
 
-  bubble.style.display = 'flex';
-
   switch (d.status) {
     case 'SUCCESS':
       icon.textContent = '✓';
@@ -742,6 +807,7 @@ function renderQueue(d) {
       h2.textContent  = 'Wydrukowano!';
       sub.textContent = 'Twoja pocztówka jest gotowa 🎉';
       bubble.style.display = 'none';
+      bubble.classList.remove('pulsing');
       status.textContent = '';
       break;
 
@@ -751,6 +817,7 @@ function renderQueue(d) {
       h2.textContent  = 'Nie udało się';
       sub.textContent = 'Spróbuj ponownie lub poproś obsługę o pomoc';
       bubble.style.display = 'none';
+      bubble.classList.remove('pulsing');
       status.textContent = '';
       break;
 
@@ -760,6 +827,7 @@ function renderQueue(d) {
       h2.textContent  = 'Drukuję…';
       sub.textContent = 'Twoja pocztówka jest teraz drukowana';
       bubble.style.display = 'none';
+      bubble.classList.remove('pulsing');
       status.textContent = 'Chwila jeszcze…';
       break;
 
@@ -769,6 +837,8 @@ function renderQueue(d) {
       icon.style.background = '#F5F0EA';
       h2.textContent  = 'Zdjęcie w kolejce!';
       sub.textContent = 'Twoja pocztówka zostanie wydrukowana';
+      bubble.style.display = 'flex';
+      bubble.classList.add('pulsing');
       num.textContent = pos ?? '–';
 
       if (pos === 1)    status.textContent = 'Następne w kolejce!';
@@ -781,6 +851,7 @@ function renderQueue(d) {
 // ── my photos ─────────────────────────────────────────
 function stopMyPhotos() {
   if (myPhotosTimer) { clearInterval(myPhotosTimer); myPhotosTimer = null; }
+  myPhotosLastData = null;
 }
 
 async function fetchMyPhotos() {
@@ -792,6 +863,10 @@ async function fetchMyPhotos() {
 }
 
 function renderMyPhotos(data) {
+  const key = JSON.stringify(data);
+  if (key === myPhotosLastData) return;
+  myPhotosLastData = key;
+
   const used = data.prints_this_hour;
   const allowed = data.prints_allowed;
   const remaining = allowed - used;
@@ -816,7 +891,8 @@ function renderMyPhotos(data) {
   list.innerHTML = data.jobs.map(jobItemHTML).join('');
 }
 
-function jobItemHTML(job) {
+function jobItemHTML(job, index) {
+  const thumb = getThumb(job.job_id);
   const icons = { PENDING:'⏳', PROCESSING:'🖨', SUCCESS:'✓', FAILED:'✕' };
   const cls   = { PENDING:'', PROCESSING:'ji-processing', SUCCESS:'ji-success', FAILED:'ji-failed' };
 
@@ -834,14 +910,29 @@ function jobItemHTML(job) {
     ? job.original_name.slice(0, 27) + '…'
     : job.original_name;
 
-  return `<div class="job-item ${cls[job.status]}">
-    <div class="ji-icon">${icons[job.status]}</div>
+  const iconContent = thumb
+    ? `<img src="${thumb}" alt="" class="ji-thumb">`
+    : icons[job.status];
+
+  return `<div class="job-item ${cls[job.status]}" style="--anim-delay:${index * 45}ms">
+    <div class="ji-icon">${iconContent}</div>
     <div class="ji-body">
       <div class="ji-name">${name}</div>
       <div class="ji-detail">${detail}</div>
     </div>
   </div>`;
 }
+
+// ── lightbox click wiring ─────────────────────────────
+document.getElementById('mp-list').addEventListener('click', e => {
+  const img = e.target.closest('.ji-thumb');
+  if (img) openThumb(img.src);
+});
+
+document.getElementById('home-thumbs').addEventListener('click', e => {
+  const img = e.target.closest('.home-thumb');
+  if (img) openThumb(img.src);
+});
 
 // ── helpers ───────────────────────────────────────────
 function plPhotos(n) {
