@@ -85,7 +85,7 @@ _viewer_proc: Optional[subprocess.Popen] = None
 def _request(method: str, path: str, body: Optional[dict] = None) -> tuple[int, bytes]:
     url  = API_BASE + path
     data = json.dumps(body).encode() if body else None
-    hdrs: dict[str, str] = {"X-Printer-Key": API_KEY}
+    hdrs: dict[str, str] = {"X-Printer-Key": API_KEY, "User-Agent": "PrinterSim/1.0"}
     if data:
         hdrs["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
@@ -108,7 +108,7 @@ def _api_next() -> Optional[dict]:
 def _api_download(job_id: str, dest: str):
     req = urllib.request.Request(
         API_BASE + f"/printer/file/{job_id}",
-        headers={"X-Printer-Key": API_KEY},
+        headers={"X-Printer-Key": API_KEY, "User-Agent": "PrinterSim/1.0"},
     )
     with urllib.request.urlopen(req, timeout=30) as r:
         with open(dest, "wb") as f:

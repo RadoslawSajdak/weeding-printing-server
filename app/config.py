@@ -15,5 +15,11 @@ class Settings(BaseSettings):
     max_file_size_mb: int = 20
     photos_per_hour: int = 3
 
+    # Lychee gallery integration (leave empty to disable)
+    lychee_url: str = ""
+    lychee_username: str = ""
+    lychee_password: str = ""
+    lychee_album_id: str = ""
+
 
 settings = Settings()

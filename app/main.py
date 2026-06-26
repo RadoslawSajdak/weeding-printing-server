@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse, RedirectResponse, Response
 from app.config import settings
 from app.database import init_db
 from app.dependencies import COOKIE_NAME, DEVICE_COOKIE
+from app import lychee as _lychee
 from app.routers import guests, printer
 
 UNPROTECTED_PREFIXES = ("/printer", "/health", "/docs", "/openapi.json", "/redoc")
@@ -22,6 +23,7 @@ async def lifespan(app: FastAPI):
     os.makedirs(os.path.dirname(settings.database_url.split("///")[-1]), exist_ok=True)
     await init_db()
     yield
+    await _lychee.close()
 
 
 app = FastAPI(title="Weselny Serwer Druku", lifespan=lifespan)

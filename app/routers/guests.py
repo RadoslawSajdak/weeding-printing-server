@@ -4,10 +4,10 @@ from pathlib import Path
 from typing import Annotated
 
 import aiofiles
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import crud
+from app import crud, lychee
 from app.database import get_db
 from app.config import settings
 from app.dependencies import ALLOWED_EXTENSIONS, get_device_id
@@ -22,7 +22,7 @@ MAX_BYTES = settings.max_file_size_mb * 1024 * 1024
 
 
 @router.post("/upload", response_model=UploadResponse, status_code=status.HTTP_201_CREATED)
-async def upload_photo(file: UploadFile, db: DbDep, device_id: DeviceId) -> UploadResponse:
+async def upload_photo(file: UploadFile, db: DbDep, device_id: DeviceId, background_tasks: BackgroundTasks) -> UploadResponse:
     ext = Path(file.filename or "").suffix.lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(
@@ -58,6 +58,7 @@ async def upload_photo(file: UploadFile, db: DbDep, device_id: DeviceId) -> Uplo
             await out.write(chunk)
 
     job, position = await crud.create_print_job(db, unique_filename, file.filename or unique_filename, device_id)
+    background_tasks.add_task(lychee.upload_photo, dest_path)
     return UploadResponse(
         job_id=job.id,
         queue_position=position,
