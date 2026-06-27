@@ -1,0 +1,36 @@
+[Unit]
+Description=Wedding Gallery Printer Daemon
+Documentation=https://github.com/RadoslawSajdak/weeding-gallery
+After=network-online.target cups.service
+Wants=network-online.target
+Requires=cups.service
+
+[Service]
+Type=simple
+User=printer
+Group=lp
+
+WorkingDirectory=/opt/weeding-printer
+
+# Per-deployment config — copy from weeding-printer.env.example and fill in
+EnvironmentFile=/etc/weeding-printer.env
+
+ExecStart=/opt/weeding-printer/venv/bin/python daemon.py
+
+# Restart on crash; back off up to 5 min
+Restart=on-failure
+RestartSec=10
+RestartMaxDelaySec=300
+
+# Harden the process
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/tmp
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=weeding-printer
+
+[Install]
+WantedBy=multi-user.target
