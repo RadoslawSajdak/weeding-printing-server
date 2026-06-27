@@ -23,9 +23,10 @@ GUTENPRINT_URL="${GUTENPRINT_URL:-}"
 # ── Argument parsing ──────────────────────────────────────────────────────────
 
 MODE=install
-if [[ "${1:-}" == "--remove" ]]; then
-    MODE=remove
-fi
+case "${1:-}" in
+    --remove) MODE=remove ;;
+    --update) MODE=update ;;
+esac
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -71,6 +72,42 @@ build_gutenprint() {
     # Refresh CUPS PPD database
     /usr/lib/cups/driver/gutenprint.5.3 org.openprinting.categories 2>/dev/null || true
     echo "    gutenprint $GUTENPRINT_VERSION installed"
+}
+
+# ── Update ───────────────────────────────────────────────────────────────────
+
+do_update() {
+    if [[ ! -d "$INSTALL_DIR" ]]; then
+        echo "ERROR: $INSTALL_DIR not found — run install first."
+        exit 1
+    fi
+
+    echo "==> Stopping $SERVICE_NAME"
+    systemctl stop "$SERVICE_NAME" 2>/dev/null || true
+
+    echo "==> Copying application files to $INSTALL_DIR"
+    cp daemon.py printer.py requirements.txt "$INSTALL_DIR/"
+    chown -R printer:lp "$INSTALL_DIR"
+
+    echo "==> Updating Python dependencies"
+    "$VENV/bin/pip" install --quiet --upgrade pip
+    "$VENV/bin/pip" install --quiet -r "$INSTALL_DIR/requirements.txt"
+    chown -R printer:lp "$VENV"
+
+    echo "==> Installing updated systemd unit"
+    cp weeding-printer.service "$UNIT"
+    systemctl daemon-reload
+
+    echo "==> Starting $SERVICE_NAME"
+    systemctl start "$SERVICE_NAME"
+
+    echo ""
+    echo "========================================"
+    echo " Update complete"
+    echo "========================================"
+    echo ""
+    echo " Watch logs: journalctl -u $SERVICE_NAME -f"
+    echo ""
 }
 
 # ── Remove ────────────────────────────────────────────────────────────────────
@@ -266,8 +303,8 @@ do_install() {
 
 # ── Dispatch ──────────────────────────────────────────────────────────────────
 
-if [[ "$MODE" == "remove" ]]; then
-    do_remove
-else
-    do_install
-fi
+case "$MODE" in
+    remove) do_remove ;;
+    update) do_update ;;
+    *)      do_install ;;
+esac
